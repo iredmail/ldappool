@@ -13,9 +13,9 @@ func WithMaxConnections(max int) Option {
 	}
 }
 
-func WithTLSConfig(tc *tls.Config) Option {
+func WithTLSConfig(tlsConfig *tls.Config) Option {
 	return func(p *Pool) {
-		p.tc = tc
+		p.tlsConfig = tlsConfig
 	}
 }
 

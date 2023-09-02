@@ -13,13 +13,13 @@ type Pool struct {
 	bindDN       string
 	bindPassword string
 	timeout      time.Duration
-	tc           *tls.Config
+	tlsConfig    *tls.Config
 
 	maxConnections int
 	connections    chan *ldap.Conn
 }
 
-func New(uri string, options ...Option) (*Pool, error) {
+func New(uri string, options ...Option) (ldap.Client, error) {
 	pool := &Pool{
 		uri: uri,
 	}
@@ -31,6 +31,11 @@ func New(uri string, options ...Option) (*Pool, error) {
 	// Set default max connections
 	if pool.maxConnections == 0 {
 		pool.maxConnections = 5
+	}
+
+	// Set default timeout
+	if pool.timeout == 0 {
+		pool.timeout = time.Second * 10
 	}
 
 	pool.connections = make(chan *ldap.Conn, pool.maxConnections)
@@ -52,8 +57,8 @@ func (p *Pool) conn() (conn *ldap.Conn, err error) {
 		return
 	}
 
-	if p.tc != nil {
-		if err = conn.StartTLS(p.tc); err != nil {
+	if p.tlsConfig != nil {
+		if err = conn.StartTLS(p.tlsConfig); err != nil {
 			return
 		}
 	}
@@ -69,16 +74,16 @@ func (p *Pool) conn() (conn *ldap.Conn, err error) {
 	return conn, err
 }
 
-func (p *Pool) get(ctx context.Context) (conn *ldap.Conn, err error) {
+func (p *Pool) get() (conn *ldap.Conn, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), p.timeout)
+	defer cancel()
+
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 	case conn = <-p.connections:
 		if conn.IsClosing() {
 			conn, err = p.conn()
-			if err != nil {
-				return
-			}
 		}
 	}
 
@@ -87,11 +92,4 @@ func (p *Pool) get(ctx context.Context) (conn *ldap.Conn, err error) {
 
 func (p *Pool) release(conn *ldap.Conn) {
 	p.connections <- conn
-}
-
-func (p *Pool) Close() {
-	for i := 0; i < p.maxConnections; i++ {
-		conn := <-p.connections
-		_ = conn.Close()
-	}
 }
