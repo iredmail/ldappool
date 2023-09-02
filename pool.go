@@ -3,6 +3,7 @@ package ldappool
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"time"
 
 	"github.com/go-ldap/ldap/v3"
@@ -80,16 +81,16 @@ func (p *Pool) get() (conn *ldap.Conn, err error) {
 
 	select {
 	case <-ctx.Done():
-		err = ctx.Err()
+		err = fmt.Errorf("failed in acquiring ldap connection from pool: %v", ctx.Err())
 	case conn = <-p.connections:
 		if conn.IsClosing() {
-			conn, err = p.conn()
+			conn, err = p.conn() // Recreate ldap connection.
 		}
 	}
 
 	return
 }
 
-func (p *Pool) release(conn *ldap.Conn) {
+func (p *Pool) put(conn *ldap.Conn) {
 	p.connections <- conn
 }
