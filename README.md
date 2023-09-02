@@ -12,7 +12,12 @@ import(
 )
 
 func main() {
-	pool, err := ldappool.New("ldap://ldap.example.com:389")
+	opts := []ldappool.Option{
+		ldappool.WithMaxConnections(10),
+		ldappool.WithBindCredentials("dn", "password"),
+    }
+	
+	pool, err := ldappool.New("ldap://ldap.example.com:389", opts...)
 	if err != nil {
 		log.Fatal(err)
     }
