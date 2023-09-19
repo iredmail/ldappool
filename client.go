@@ -1,6 +1,7 @@
 package ldappool
 
 import (
+	"context"
 	"crypto/tls"
 	"time"
 
@@ -234,6 +235,17 @@ func (p *Pool) Search(request *ldap.SearchRequest) (*ldap.SearchResult, error) {
 	return conn.Search(request)
 }
 
+func (p *Pool) SearchAsync(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int) ldap.Response {
+	conn, err := p.get()
+	if err != nil {
+		return ResponseError(err)
+	}
+
+	defer p.put(conn)
+
+	return conn.SearchAsync(ctx, searchRequest, bufferSize)
+}
+
 func (p *Pool) SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSize uint32) (*ldap.SearchResult, error) {
 	conn, err := p.get()
 	if err != nil {
@@ -254,4 +266,26 @@ func (p *Pool) DirSync(searchRequest *ldap.SearchRequest, flags, maxAttrCount in
 	defer p.put(conn)
 
 	return conn.DirSync(searchRequest, flags, maxAttrCount, cookie)
+}
+
+func (p *Pool) DirSyncAsync(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int, flags, maxAttrCount int64, cookie []byte) ldap.Response {
+	conn, err := p.get()
+	if err != nil {
+		return ResponseError(err)
+	}
+
+	defer p.put(conn)
+
+	return conn.DirSyncAsync(ctx, searchRequest, bufferSize, flags, maxAttrCount, cookie)
+}
+
+func (p *Pool) Syncrepl(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int, mode ldap.ControlSyncRequestMode, cookie []byte, reloadHint bool) ldap.Response {
+	conn, err := p.get()
+	if err != nil {
+		return ResponseError(err)
+	}
+
+	defer p.put(conn)
+
+	return conn.Syncrepl(ctx, searchRequest, bufferSize, mode, cookie, reloadHint)
 }
