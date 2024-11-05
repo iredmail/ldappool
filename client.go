@@ -10,6 +10,7 @@ import (
 
 func (p *Pool) Start() {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return
 	}
@@ -19,6 +20,7 @@ func (p *Pool) Start() {
 
 func (p *Pool) StartTLS(config *tls.Config) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -37,6 +39,7 @@ func (p *Pool) Close() error {
 
 func (p *Pool) GetLastError() error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -46,6 +49,7 @@ func (p *Pool) GetLastError() error {
 
 func (p *Pool) IsClosing() bool {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return true
 	}
@@ -55,6 +59,7 @@ func (p *Pool) IsClosing() bool {
 
 func (p *Pool) SetTimeout(duration time.Duration) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return
 	}
@@ -64,6 +69,7 @@ func (p *Pool) SetTimeout(duration time.Duration) {
 
 func (p *Pool) TLSConnectionState() (cs tls.ConnectionState, found bool) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return
 	}
@@ -73,6 +79,7 @@ func (p *Pool) TLSConnectionState() (cs tls.ConnectionState, found bool) {
 
 func (p *Pool) Bind(username, password string) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -82,6 +89,7 @@ func (p *Pool) Bind(username, password string) error {
 
 func (p *Pool) UnauthenticatedBind(username string) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -91,6 +99,7 @@ func (p *Pool) UnauthenticatedBind(username string) error {
 
 func (p *Pool) SimpleBind(request *ldap.SimpleBindRequest) (*ldap.SimpleBindResult, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +109,7 @@ func (p *Pool) SimpleBind(request *ldap.SimpleBindRequest) (*ldap.SimpleBindResu
 
 func (p *Pool) ExternalBind() error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -109,6 +119,7 @@ func (p *Pool) ExternalBind() error {
 
 func (p *Pool) NTLMUnauthenticatedBind(domain, username string) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -118,6 +129,7 @@ func (p *Pool) NTLMUnauthenticatedBind(domain, username string) error {
 
 func (p *Pool) Unbind() error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -127,6 +139,7 @@ func (p *Pool) Unbind() error {
 
 func (p *Pool) Add(request *ldap.AddRequest) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -136,6 +149,7 @@ func (p *Pool) Add(request *ldap.AddRequest) error {
 
 func (p *Pool) Del(request *ldap.DelRequest) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -145,6 +159,7 @@ func (p *Pool) Del(request *ldap.DelRequest) error {
 
 func (p *Pool) Modify(request *ldap.ModifyRequest) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -154,6 +169,7 @@ func (p *Pool) Modify(request *ldap.ModifyRequest) error {
 
 func (p *Pool) ModifyDN(request *ldap.ModifyDNRequest) error {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return err
 	}
@@ -163,6 +179,7 @@ func (p *Pool) ModifyDN(request *ldap.ModifyDNRequest) error {
 
 func (p *Pool) ModifyWithResult(request *ldap.ModifyRequest) (*ldap.ModifyResult, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -172,6 +189,7 @@ func (p *Pool) ModifyWithResult(request *ldap.ModifyRequest) (*ldap.ModifyResult
 
 func (p *Pool) Compare(dn, attribute, value string) (bool, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return false, err
 	}
@@ -181,6 +199,7 @@ func (p *Pool) Compare(dn, attribute, value string) (bool, error) {
 
 func (p *Pool) PasswordModify(request *ldap.PasswordModifyRequest) (*ldap.PasswordModifyResult, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +209,7 @@ func (p *Pool) PasswordModify(request *ldap.PasswordModifyRequest) (*ldap.Passwo
 
 func (p *Pool) Search(request *ldap.SearchRequest) (*ldap.SearchResult, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -199,6 +219,7 @@ func (p *Pool) Search(request *ldap.SearchRequest) (*ldap.SearchResult, error) {
 
 func (p *Pool) SearchAsync(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int) ldap.Response {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return ResponseError(err)
 	}
@@ -208,6 +229,7 @@ func (p *Pool) SearchAsync(ctx context.Context, searchRequest *ldap.SearchReques
 
 func (p *Pool) SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSize uint32) (*ldap.SearchResult, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -217,6 +239,7 @@ func (p *Pool) SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSize ui
 
 func (p *Pool) DirSync(searchRequest *ldap.SearchRequest, flags, maxAttrCount int64, cookie []byte) (*ldap.SearchResult, error) {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +249,7 @@ func (p *Pool) DirSync(searchRequest *ldap.SearchRequest, flags, maxAttrCount in
 
 func (p *Pool) DirSyncAsync(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int, flags, maxAttrCount int64, cookie []byte) ldap.Response {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return ResponseError(err)
 	}
@@ -235,6 +259,7 @@ func (p *Pool) DirSyncAsync(ctx context.Context, searchRequest *ldap.SearchReque
 
 func (p *Pool) Syncrepl(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int, mode ldap.ControlSyncRequestMode, cookie []byte, reloadHint bool) ldap.Response {
 	conn, err := p.get()
+	defer p.put(conn)
 	if err != nil {
 		return ResponseError(err)
 	}

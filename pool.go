@@ -90,8 +90,6 @@ func (p *Pool) get() (conn *ldap.Conn, err error) {
 				conn = _conn
 			}
 		}
-
-		defer p.put(conn)
 	}
 
 	return
