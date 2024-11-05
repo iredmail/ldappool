@@ -9,6 +9,8 @@ import (
 	"github.com/go-ldap/ldap/v3"
 )
 
+const defaultMaxConnections = 10
+
 type Pool struct {
 	uri          string
 	bindDN       string
@@ -31,7 +33,7 @@ func New(uri string, options ...Option) (ldap.Client, error) {
 
 	// Set default max connections
 	if pool.maxConnections == 0 {
-		pool.maxConnections = 5
+		pool.maxConnections = defaultMaxConnections
 	}
 
 	// Set default timeout
