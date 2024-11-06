@@ -3,13 +3,26 @@ package ldappool
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"time"
 
 	"github.com/go-ldap/ldap/v3"
 )
 
-const defaultMaxConnections = 10
+type LDAPPool interface {
+	Add(request *ldap.AddRequest) error
+	Del(request *ldap.DelRequest) error
+	Modify(request *ldap.ModifyRequest) error
+	ModifyDN(request *ldap.ModifyDNRequest) error
+	ModifyWithResult(request *ldap.ModifyRequest) (*ldap.ModifyResult, error)
+	Compare(dn, attribute, value string) (bool, error)
+	PasswordModify(request *ldap.PasswordModifyRequest) (*ldap.PasswordModifyResult, error)
+	Search(request *ldap.SearchRequest) (*ldap.SearchResult, error)
+	SearchAsync(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int) ldap.Response
+	SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSize uint32) (*ldap.SearchResult, error)
+	DirSync(searchRequest *ldap.SearchRequest, flags, maxAttrCount int64, cookie []byte) (*ldap.SearchResult, error)
+	DirSyncAsync(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int, flags, maxAttrCount int64, cookie []byte) ldap.Response
+	Syncrepl(ctx context.Context, searchRequest *ldap.SearchRequest, bufferSize int, mode ldap.ControlSyncRequestMode, cookie []byte, reloadHint bool) ldap.Response
+}
 
 type Pool struct {
 	uri          string
@@ -17,12 +30,9 @@ type Pool struct {
 	bindPassword string
 	timeout      time.Duration
 	tlsConfig    *tls.Config
-
-	maxConnections int
-	connections    chan *ldap.Conn
 }
 
-func New(uri string, options ...Option) (ldap.Client, error) {
+func New(uri string, options ...Option) (LDAPPool, error) {
 	pool := &Pool{
 		uri: uri,
 	}
@@ -31,24 +41,9 @@ func New(uri string, options ...Option) (ldap.Client, error) {
 		opt(pool)
 	}
 
-	// Set default max connections
-	if pool.maxConnections == 0 {
-		pool.maxConnections = defaultMaxConnections
-	}
-
 	// Set default timeout
 	if pool.timeout == 0 {
 		pool.timeout = time.Second * 10
-	}
-
-	pool.connections = make(chan *ldap.Conn, pool.maxConnections)
-	for i := 0; i < pool.maxConnections; i++ {
-		conn, err := pool.conn()
-		if err != nil {
-			return nil, err
-		}
-
-		pool.connections <- conn
 	}
 
 	return pool, nil
@@ -77,26 +72,6 @@ func (p *Pool) conn() (conn *ldap.Conn, err error) {
 	return conn, err
 }
 
-func (p *Pool) get() (conn *ldap.Conn, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), p.timeout)
-	defer cancel()
-
-	select {
-	case <-ctx.Done():
-		err = fmt.Errorf("failed in acquiring ldap connection from pool: %v", ctx.Err())
-	case conn = <-p.connections:
-		if conn.IsClosing() {
-			var _conn *ldap.Conn
-			_conn, err = p.conn() // Recreate ldap connection.
-			if err == nil {
-				conn = _conn
-			}
-		}
-	}
-
-	return
-}
-
-func (p *Pool) put(conn *ldap.Conn) {
-	p.connections <- conn
+func (p *Pool) close(conn *ldap.Conn) {
+	_ = conn.Close()
 }

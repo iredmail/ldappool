@@ -7,12 +7,6 @@ import (
 
 type Option func(p *Pool)
 
-func WithMaxConnections(max int) Option {
-	return func(p *Pool) {
-		p.maxConnections = max
-	}
-}
-
 func WithTLSConfig(tlsConfig *tls.Config) Option {
 	return func(p *Pool) {
 		p.tlsConfig = tlsConfig
