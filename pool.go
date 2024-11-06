@@ -85,7 +85,7 @@ func (p *Pool) get() (conn *ldap.Conn, err error) {
 	case <-ctx.Done():
 		err = fmt.Errorf("failed in acquiring ldap connection from pool: %v", ctx.Err())
 	case conn = <-p.connections:
-		if conn.IsClosing() {
+		if conn != nil && conn.IsClosing() {
 			var _conn *ldap.Conn
 			_conn, err = p.conn() // Recreate ldap connection.
 			if err == nil {
