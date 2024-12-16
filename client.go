@@ -266,3 +266,13 @@ func (p *Pool) Syncrepl(ctx context.Context, searchRequest *ldap.SearchRequest, 
 
 	return conn.Syncrepl(ctx, searchRequest, bufferSize, mode, cookie, reloadHint)
 }
+
+func (p *Pool) Extended(request *ldap.ExtendedRequest) (er *ldap.ExtendedResponse, err error) {
+	conn, err := p.get()
+	defer p.put(conn)
+	if err != nil {
+		return
+	}
+
+	return conn.Extended(request)
+}
