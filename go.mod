@@ -10,4 +10,5 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/stretchr/testify v1.11.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/net v0.48.0 // indirect
 )
