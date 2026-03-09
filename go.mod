@@ -1,6 +1,6 @@
 module github.com/iredmail/ldappool
 
-go 1.25.5
+go 1.26.1
 
 require github.com/go-ldap/ldap/v3 v3.4.12
 
@@ -10,5 +10,5 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/stretchr/testify v1.11.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 )
