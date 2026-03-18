@@ -137,6 +137,10 @@ func (p *Pool) Unbind() error {
 	return conn.Unbind()
 }
 
+func (p *Pool) NewConn() (*ldap.Conn, error) {
+	return p.conn()
+}
+
 func (p *Pool) Add(request *ldap.AddRequest) error {
 	conn, err := p.get()
 	defer p.put(conn)
