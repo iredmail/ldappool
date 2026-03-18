@@ -22,7 +22,7 @@ type Pool struct {
 	connections    chan *ldap.Conn
 }
 
-func New(uri string, options ...Option) (ldap.Client, error) {
+func New(uri string, options ...Option) (*Pool, error) {
 	pool := &Pool{
 		uri: uri,
 	}
