@@ -2,7 +2,7 @@ module github.com/iredmail/ldappool
 
 go 1.27.1
 
-require github.com/go-ldap/ldap/v3 v3.4.14
+require github.com/go-ldap/ldap/v3 v3.4.15
 
 require (
 	github.com/Azure/go-ntlmssp v0.1.1 // indirect
